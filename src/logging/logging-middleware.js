@@ -4,18 +4,21 @@ export function Log(stack, level, pkg, message) {
     timestamp: new Date().toISOString(),
     stack,
     level,
-    package: pkg,
+    pkg,
     message,
   };
 
-  try {
-    // Replace with the test server URL given in pre-setup
-    fetch("http://localhost:5000/logs", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(logEntry),
-    });
-  } catch (err) {
-    console.error("Failed to send log:", err);
+  // Instead of fetch (backend), just save in localStorage for frontend-only
+  let logs = JSON.parse(localStorage.getItem("logs") || "[]");
+  logs.push(logEntry);
+  localStorage.setItem("logs", JSON.stringify(logs));
+
+  // Optional: show in console (grouped nicely)
+  if (process.env.NODE_ENV === "development") {
+    console.group(`[${level.toUpperCase()}] ${pkg}`);
+    console.log("Stack:", stack);
+    console.log("Message:", message);
+    console.log("Time:", logEntry.timestamp);
+    console.groupEnd();
   }
 }
